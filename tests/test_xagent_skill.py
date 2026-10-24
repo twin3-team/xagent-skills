@@ -75,11 +75,13 @@ class XagentSkillTests(unittest.TestCase):
         self.assertEqual(opener.open.call_count, 1)
 
     def test_service_failure_is_distinct_from_success(self):
-        error = urllib.error.HTTPError("https://xagent.id", 503, "unavailable", {}, None)
+        response = io.BytesIO(b"untrusted response body")
+        error = urllib.error.HTTPError("https://xagent.id", 503, "unavailable", {}, response)
         status, output, errors, _ = self.invoke(["company", "--registration-id", "22099131"], error=error)
         self.assertEqual(status, 1)
         self.assertEqual(output, "")
         self.assertEqual(json.loads(errors), {"ok": False, "http_status": 503})
+        self.assertTrue(response.closed)
 
     def test_redirects_are_not_followed(self):
         self.assertIsNone(CLIENT.NoRedirect().redirect_request(None, None, 302, "", {}, "https://elsewhere.example"))

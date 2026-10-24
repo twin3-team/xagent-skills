@@ -1,0 +1,4 @@
+interface:
+  display_name: "xAgent ID"
+  short_description: "Look up company cards and Agent install readiness"
+  default_prompt: "Use $xagent-id to read a company's public Agent Card by domain and explain its identity evidence."

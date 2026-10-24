@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+.agents/
+.claude/
+.cursor/
+skills-lock.json

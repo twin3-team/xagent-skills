@@ -5,7 +5,7 @@ on:
       version:
         description: Version matching skill metadata
         required: true
-        default: '0.1.0'
+        default: '0.2.0'
 permissions:
   contents: read
 jobs:

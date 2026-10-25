@@ -83,5 +83,39 @@ class XagentSkillTests(unittest.TestCase):
         self.assertEqual(json.loads(errors), {"ok": False, "http_status": 503})
         self.assertTrue(response.closed)
 
+    PRICING = {"currency": "USD", "billing_period": "monthly", "sellable_plan_ids": ["identity", "ainbox"], "plans": [{"id": "identity", "name": "Identity", "price": 29.99}, {"id": "ainbox", "name": "AInbox", "price": 49.99}, {"id": "operate", "name": "Operate", "price": 299.0}]}
+
+    def test_checkout_link_returns_prefilled_claim_url_for_sellable_plan(self):
+        status, output, errors, opener = self.invoke(["checkout-link", "--domain", "Example.COM", "--plan", "ainbox", "--source", "claude-code"], json.dumps(self.PRICING).encode())
+        self.assertEqual(status, 0)
+        self.assertEqual(errors, "")
+        result = json.loads(output)
+        self.assertEqual(result["checkout_url"], "https://xagent.id/claim?host=example.com&plan=ainbox&source=skill-claude-code")
+        self.assertEqual((result["plan_name"], result["price"], result["currency"]), ("AInbox", 49.99, "USD"))
+        self.assertIn("no_payment_made", result["not_done"])
+        request = opener.open.call_args.args[0]
+        self.assertEqual(request.full_url, "https://xagent.id/api/agent/pricing")
+        self.assertEqual(request.get_method(), "GET")
+
+    def test_checkout_link_defaults_unknown_source(self):
+        status, output, _, _ = self.invoke(["checkout-link", "--domain", "example.com", "--plan", "identity"], json.dumps(self.PRICING).encode())
+        self.assertEqual(status, 0)
+        self.assertTrue(json.loads(output)["checkout_url"].endswith("&source=skill-unknown"))
+
+    def test_checkout_link_refuses_plan_that_is_not_sellable(self):
+        for pricing in [self.PRICING, {**self.PRICING, "sellable_plan_ids": None}, {**self.PRICING, "plans": None}]:
+            with self.subTest(pricing=pricing):
+                status, output, errors, _ = self.invoke(["checkout-link", "--domain", "example.com", "--plan", "operate"], json.dumps(pricing).encode())
+                self.assertEqual(status, 2)
+                self.assertEqual(output, "")
+                self.assertEqual(json.loads(errors)["error"], "plan_not_sellable")
+
+    def test_checkout_link_invalid_arguments_never_issue_requests(self):
+        for args in [["checkout-link", "--domain", "example.com"], ["checkout-link", "--plan", "identity"], ["checkout-link", "--domain", "https://example.com", "--plan", "identity"], ["checkout-link", "--domain", "example.com", "--plan", "Identity"], ["checkout-link", "--domain", "example.com", "--plan", "identity", "--source", "Bad Source"], ["pricing", "--plan", "identity"], ["card", "--domain", "example.com", "--source", "codex"]]:
+            with self.subTest(args=args):
+                status, _, _, opener = self.invoke(args)
+                self.assertEqual(status, 2)
+                opener.open.assert_not_called()
+
     def test_redirects_are_not_followed(self):
         self.assertIsNone(CLIENT.NoRedirect().redirect_request(None, None, 302, "", {}, "https://elsewhere.example"))

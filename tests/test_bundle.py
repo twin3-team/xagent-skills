@@ -22,12 +22,12 @@ class BundleTests(unittest.TestCase):
         shutil.copytree(ROOT / "scripts", self.root / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
 
     def build(self, **values):
-        environment = {**os.environ, "RELEASE_VERSION": "0.1.0", "GITHUB_SHA": "a" * 40, **values}
+        environment = {**os.environ, "RELEASE_VERSION": "0.2.0", "GITHUB_SHA": "a" * 40, **values}
         return subprocess.run([sys.executable, str(self.root / "scripts/build_bundle.py")], env=environment, capture_output=True, text=True)
 
     def test_archive_is_complete_deterministic_and_bound_to_source(self):
         self.assertEqual(self.build().returncode, 0)
-        archive = self.root / "dist/xagent-id-0.1.0.zip"
+        archive = self.root / "dist/xagent-id-0.2.0.zip"
         first = archive.read_bytes()
         self.assertEqual(self.build().returncode, 0)
         self.assertEqual(first, archive.read_bytes())

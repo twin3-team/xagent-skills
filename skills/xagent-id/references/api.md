@@ -10,6 +10,7 @@ Origin: https://xagent.id. No authentication is required for the following GET r
 | card --domain HOST | /HOST.json | Public company Agent Card by DNS hostname |
 | company --registration-id ID | /api/company-card/resolve?registration_id=ID | Exact eight-digit Taiwan registration lookup |
 | install-status | /agent/mcp.json | Transport, release readiness and invocation metadata |
+| checkout-link --domain HOST --plan ID [--source CLIENT] | /api/agent/pricing | Confirms the plan is in `sellable_plan_ids`, then prints `https://xagent.id/claim?host=HOST&plan=ID&src=skill-CLIENT` for the owner to open; it starts no claim and makes no payment |
 
 The company resolver may return a refusal, missing data or an unclaimed projection. Preserve those states. Do not infer business facts from a registration number alone.
 

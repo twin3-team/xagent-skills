@@ -88,7 +88,7 @@ def checkout_link(pricing, domain, plan_id, source):
     if not isinstance(sellable, list) or plan_id not in sellable or plan is None:
         print(json.dumps({"ok": False, "error": "plan_not_sellable", "plan": plan_id, "sellable_plan_ids": sellable if isinstance(sellable, list) else []}), file=sys.stderr)
         return 2
-    query = {"host": domain, "plan": plan_id, "src": "skill-" + (source or "unknown")}
+    query = {"host": domain, "plan": plan_id, "source": "skill-" + (source or "unknown")}
     print(json.dumps({
         "ok": True,
         "domain": domain,

@@ -90,7 +90,7 @@ class XagentSkillTests(unittest.TestCase):
         self.assertEqual(status, 0)
         self.assertEqual(errors, "")
         result = json.loads(output)
-        self.assertEqual(result["checkout_url"], "https://xagent.id/claim?host=example.com&plan=ainbox&src=skill-claude-code")
+        self.assertEqual(result["checkout_url"], "https://xagent.id/claim?host=example.com&plan=ainbox&source=skill-claude-code")
         self.assertEqual((result["plan_name"], result["price"], result["currency"]), ("AInbox", 49.99, "USD"))
         self.assertIn("no_payment_made", result["not_done"])
         request = opener.open.call_args.args[0]
@@ -100,7 +100,7 @@ class XagentSkillTests(unittest.TestCase):
     def test_checkout_link_defaults_unknown_source(self):
         status, output, _, _ = self.invoke(["checkout-link", "--domain", "example.com", "--plan", "identity"], json.dumps(self.PRICING).encode())
         self.assertEqual(status, 0)
-        self.assertTrue(json.loads(output)["checkout_url"].endswith("&src=skill-unknown"))
+        self.assertTrue(json.loads(output)["checkout_url"].endswith("&source=skill-unknown"))
 
     def test_checkout_link_refuses_plan_that_is_not_sellable(self):
         for pricing in [self.PRICING, {**self.PRICING, "sellable_plan_ids": None}, {**self.PRICING, "plans": None}]:
